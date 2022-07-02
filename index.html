@@ -1,0 +1,1655 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transit Accessibility</title>
+</head>
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.css" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.min.js"></script>
+<link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v4.7.2/mapbox-gl-geocoder.css" type="text/css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,200;0,300;0,400;0,600;0,700;0,900;1,200;1,300;1,400;1,600;1,700;1,900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@100;200;300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.6.1/mapbox-gl.js"></script>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+<style>
+
+  *{
+      font-family: 'Source Sans Pro', sans-serif;
+      margin: 0;
+  }
+  body {
+      margin: 0;
+      padding: 0;
+      background-color: #424141;
+  }
+  #map_bef {
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      left: 0px;
+      width: 100%;
+      z-index: 0
+  }
+  #map_aft {
+      position: absolute;
+      top: 0px;
+      bottom: 0px;
+      right: 0px;
+      width: 100%;
+      z-index: 0
+  }
+  #navbar {
+      position: absolute;
+      top: 0px;
+      left: 0px;
+      width: 100%;
+      height: 90px;
+      background-color: black;
+      opacity: 0.25;
+  }
+  .titleMain{
+      position: absolute;
+      left: 30px;
+      top: 20px;
+      font-size: 36px;
+      font-weight: 800;
+      color: white;
+  }
+  .logo-wrapper {
+        position: absolute;
+        top: 30px;
+        right: 10px;
+        width: 310px;
+        height: 50px;
+        display: -webkit-flex;
+        display: -ms-flex;
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+  }
+  .titleMap{
+      position: absolute;
+      left: 0px;
+      top: 100px;
+      width: 100%;
+      height: 50px;
+      margin-left: 10px;
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+  }
+  .titleMapSub {
+      font-size: 22px;
+      font-weight: 200;
+      margin-top: 5px;
+      display: flex;
+      justify-content: space-around;
+  }
+  .legend-box{
+      position: absolute;
+      left: 20px;
+      bottom: 60px;
+      width: 320px;
+      height: 270px;
+      color: white;
+      font-weight: 500;
+      background-color: black;
+      opacity: 0.3;
+      border-radius: 10px;
+  }
+  .legend-wrapper{
+      position: absolute;
+      left: 20px;
+      bottom: 60px;
+      width: 320px;
+      height: 270px;
+      color: white;
+      font-weight: 500;
+      border-radius: 10px;
+  }
+  .legendTitle{
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: 10px;
+    font-size:17px;
+  }
+  .legendBoxes{
+    position: absolute;
+    left: 10px;
+    top: 100px;
+    display: flex;
+    flex-direction: column;
+  }
+  .legendBox{
+    margin-top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background-color: black;
+  }
+  .legendText{
+    position: absolute;
+    left: 25px;
+    top: 100px;
+    margin-left: 10px;
+    color: white;
+    font-weight: 300;
+    display: flex;
+    flex-direction: column;
+  }
+  .session {
+      position: absolute;
+      left: 20px;
+      top: 200px;
+      width: 400px;
+      height: 110px;
+      color: white;
+      border-radius: 10px;
+  }
+  .row {
+    padding: 4px;
+    display: flex;
+    margin-bottom: 120px;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  input[type="radio"] {
+    display: none;
+  }
+  label {
+    position: relative;
+    cursor: pointer;
+    padding-right: 18px;
+  }
+  label:nth-child(1) {
+    padding-right: 1;
+  }
+  label::before {
+    content: "";
+    border: 1.5px solid white;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: -2px 10px;
+    margin-left: 0;
+    border-radius: 50%;
+  }
+  label#filter_rel::before {
+    content: "";
+    border: 1.5px solid white;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    margin: 6px 10px;
+    margin-left: 0;
+    border-radius: 50%;
+  }
+  label::after {
+    content: "";
+    display: inline-block;
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    left: 1.8px;
+    top: 9px;
+    margin: -2px 10px;
+    margin-left: 0;
+    border-radius: 50%;
+    transition: all 0.4s;
+  }
+  label#filter_rel::after {
+    content: "";
+    display: inline-block;
+    position: absolute;
+    width: 9px;
+    height: 9px;
+    left: 1.8px;
+    top: 32px;
+    margin: -2px 10px;
+    margin-left: 0;
+    border-radius: 50%;
+    transition: all 0.4s;
+  }
+  input[type="radio"]:checked + label::after {
+    background: #04AA6D;
+  }
+  .sliderContainerAbsolute {
+      position: absolute;
+      left: 0%;
+      top: 335px;
+      width: 260px;
+      height: 120px;
+      z-index: 1;
+  }
+  .sliderContentAbsolute {
+    font-weight: 300;
+    font-size: 13px;
+    color: white;
+    position: absolute;
+    left: 23px;
+    top: 0px;
+    width: 100%;
+  }
+  .sliderContainerRelative {
+    position: absolute;
+    left: 0%;
+    top: 335px;
+    width: 260px;
+    height: 120px;
+  }
+  .sliderContentRelative {
+    font-weight: 300;
+    font-size: 13px;
+    color: white;
+    position: absolute;
+    left: 23px;
+    top: 0px;
+    width: 100%;
+  }
+  .slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 10px;
+    border-radius: 5px;
+    background: #d3d3d3;
+    outline: none;
+    opacity: 0.6;
+  }
+  .slider:hover {
+    opacity: 1;
+  }
+  .slider::-webkit-slider-thumb {
+      -webkit-appearance: none; /* Override default look */
+      appearance: none;
+      width: 20px; /* Set a specific slider handle width */
+      height: 20px; /* Slider handle height */
+      border-radius: 50%;
+      background: #04AA6D; /* Green background */
+      cursor: pointer; /* Cursor on hover */
+  }
+  .mapboxgl-popup-content {
+      font-size: 15px;
+      font-weight: 600;
+      width: 300px;
+      position: relative;
+      background: rgb(255, 255, 255);
+      opacity: 0.7;
+      border-radius: 3px;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.10);
+      padding: 4px 4px 4px;
+      pointer-events: auto;
+      line-height: 1.6;
+      z-index: 2;
+  }
+  .fraction{
+    top: 5px;
+    left: -23px;
+    display: inline-block;
+    text-align: center;
+    position:relative;
+    padding:0 1em;
+  }
+  .fraction > .num {
+      border-bottom: 2px solid #808080;
+      padding:4px;
+      margin:10 10 8px 10;
+  }
+  .fraction > .dem{
+      padding: 0;
+      margin: 0;
+  }
+
+
+
+</style>
+
+<body>
+  <div id="map_bef"></div>
+  <div id="map_aft"></div>
+  <div id="navbar"></div>
+  <div class="titleMain">
+    <a href="." style="text-decoration:none; color:white;">Atlanta Public Transit Accessibility Explorer</a>
+  </div>
+  <div class="logo-wrapper">
+    <a href="https://gatech.edu/"><img src="https://www.gatech.edu/sites/all/themes/gt/images/gt-logo-oneline-white.svg" alt="" width="150" height="30"></a>
+    <a href="https://cspav.gatech.edu/" style="margin-left:10px; font-size:12px; text-decoration:none; color: white;">
+      <p class="logo-text">Center for Spatial Planning Analytics and Visualization</p>
+    </a>
+  </div>
+  <div class="titleMap">
+    <div class="titleMapSub">
+      <p style="color:white; text-align:center">
+        <font size='+2'><b>Conventional Public Transit System</b></font></p>
+      <p style="color:white; text-align:center">
+        <font size='+2'><b>On-demand Multimodal Transit System</b></font></p>
+    </div>
+  </div>
+  <div class="legend-box"></div>
+  <div class="legend-wrapper">
+    <div class="legendTitle" id="legendTitle">
+      <p>Proportion of residents who can commute to work by transit within <b>45 minutes</b> during morning peak hour
+      </p>
+    </div>
+    <div class="legendBoxes">
+      <div class="legendBox", style="background-color:#213E9A"></div>
+      <div class="legendBox", style="background-color:#3C1FA7"></div>
+      <div class="legendBox", style="background-color:#3C1FA7"></div>
+      <div class="legendBox", style="background-color:#C318B0"></div>
+      <div class="legendBox", style="background-color:#D01367"></div>
+      <div class="legendBox", style="background-color:#DE0F0E"></div>
+      <div class="legendBox", style="background-color:#EC7007"></div>
+      <div class="legendBox", style="background-color:#F9E200"></div>
+    </div>
+    <div class="legendText">
+      <p>less then 5%</p>
+      <p>5 - 10%</p>
+      <p>10 - 20%</p>
+      <p>20 - 30%</p>
+      <p>30 - 40%</p>
+      <p>40 - 60%</p>
+      <p>60 - 80%</p>
+      <p>more than 80%</p>
+    </div>
+  </div>
+  <div class="session">
+    <div class='session_meas'>
+      <div class="session_title">
+        <p style="font-size: 21px; font-weight: 600;">Accesibility Type</p>
+      </div>
+      <div class='row' id='filters_meas'>
+        <input id='abs' type='radio' name='toggle_meas' onclick="getSlider_abs()" value='abs' checked='checked'>
+        <label for='abs'>Public Transit Time</label>
+        <input id='rel' type='radio' name='toggle_meas' onclick="getSlider_rel()" value='rel'>
+        <label id= 'filter_rel' for='rel'>
+          <div class="fraction">
+            <p class="num">Public Transit Time</p>
+            <p class="dem">Driving Time</p>
+        </div>
+        </label>
+      </div>
+    </div>
+    <div class='session_trip'>
+      <div class="session_title">
+        <p style="font-size: 21px; font-weight: 600;">Trip purpose</p>
+      </div>
+      <div class='row' id='filters_trip'>
+        <input id='com' type='radio' name='toggle_trip' value='com' checked='checked'>
+        <label for='com'>Commuting</label>
+        <input id='non' type='radio' name='toggle_trip' value='non'>
+        <label for='non'>Non-commuting</label>
+      </div>
+    </div>
+  </div>
+  <div class="sliderContainerAbsolute">
+    <div class='sliderContentAbsolute'>
+      <p style="margin-bottom:7px; font-size:17px; font-weight: 300;">
+        Accessible within <b><span id="sliderValue_abs"></b> </span> minutes
+      </p>
+    <input id='myRange_abs' class="slider" type="range" min="30" max="75" value="45" step="3">
+    <p style="text-align:left; margin-bottom: 0em;"> 30 minutes
+      <span style="float:right"> 75 minutes </span> </p>
+    </div>
+  </div>
+  <div class="sliderContainerRelative">
+    <div class='sliderContentRelative'>
+      <p style="margin-bottom:7px; font-size:17px; font-weight: 300;">
+        Accessible within <b><span id="sliderValue_rel"></b> </span> X driving time </p>
+      <input id='myRange_rel' class="slider" type="range" min="1" max="3" value="2" step="0.2">
+      <p style="text-align:left; margin-bottom: 0em;"> Equal
+        <span style="float:right"> 3 times </span> </p>
+    </div>
+  </div>
+
+<script>
+// default (Absolute measure) - only the slider_abs shown
+document.getElementsByClassName("sliderContentRelative")[0].style.visibility = "hidden";
+
+// show the absolute slider while hiding the relative one - by clicking the radio button
+function getSlider_abs(){
+	document.getElementsByClassName("sliderContentAbsolute")[0].style.visibility = "visible";
+	document.getElementsByClassName("sliderContentAbsolute")[0].style.zIndex = "1";
+	document.getElementsByClassName("sliderContentRelative")[0].style.visibility = "hidden";
+}
+// show the relative slider while hiding the absolute one - by clicking the radio button
+function getSlider_rel(){
+	document.getElementsByClassName("sliderContentAbsolute")[0].style.visibility = "hidden";
+	document.getElementsByClassName("sliderContentRelative")[0].style.visibility = "visible";
+	document.getElementsByClassName("sliderContentRelative")[0].style.zIndex = "1";
+}
+// Color set
+const colors = ['#213E9A',' #3C1FA7', '#811CB5', '#C318B0', '#D01367', '#DE0F0E', '#EC7007', '#F9E200']
+
+// Fix the size of two maps regardless of the window size
+window.onresize = function () {
+    setWindowSize();
+}
+function setWindowSize() {
+    var width = (window.innerWidth - 1) /2;
+    d3.select("#map_bef").style("width", width + "px")
+    d3.select("#map_aft").style("width", width + "px")
+}
+setWindowSize();
+
+// mapbox token
+mapboxgl.accessToken = 'pk.eyJ1IjoidWh3YW5nMyIsImEiOiJja3d0bGh4cG8wemxtMm5xcTJ1anc4ajlxIn0.GPUcPfwoUXy6pItqRUvifw';
+
+// create the map (Conventional Public Transity System)
+var map_bef = new mapboxgl.Map({
+container: 'map_bef', // container ID
+style: 'mapbox://styles/uhwang3/ckwufpsse0va014pe2lwbyr8b', // style URL //dark-v10
+center: [-84.39132, 33.822556], // starting position [lng, lat]
+zoom: 9.5, // starting zoom
+minZoom: 3
+});
+
+// create the map (ODMTS)
+var map_aft = new mapboxgl.Map({
+container: 'map_aft', // container ID
+style: 'mapbox://styles/uhwang3/ckwufpsse0va014pe2lwbyr8b', // style URL //dark-v10
+center: [-84.39132, 33.822556], // starting position [lng, lat]
+zoom: 9.5, // starting zoom
+minZoom: 3,
+});
+
+// create the popup on the before map
+const popup_bef = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: true
+});
+
+// create the popup on the after map
+const popup_aft = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: true
+});
+
+// set the slider value for absolute measure
+let slider_abs = document.getElementById("myRange_abs");
+let sliderValue_abs = document.getElementById("sliderValue_abs");
+sliderValue_abs.innerHTML = slider_abs.value; // Display the default slider value
+let slider_filter_abs = slider_abs.value;
+
+// set the slider value for relative measure
+let slider_rel = document.getElementById("myRange_rel");
+let sliderValue_rel = document.getElementById("sliderValue_rel");
+sliderValue_rel.innerHTML = slider_rel.value; // Display the default slider value
+let slider_filter_rel = slider_rel.value;
+
+// Because features come from tiled vector data,
+// feature geometries may be split or duplicated across tile boundaries.
+// As a result, features may appear multiple times in query results.
+function getUniqueFeatures(features, comparatorProperty) {
+    const uniqueIds = new Set();
+    const uniqueFeatures = [];
+    for (const feature of features) {
+        const id = feature.properties[comparatorProperty];
+        if (!uniqueIds.has(id)) {
+            uniqueIds.add(id);
+            uniqueFeatures.push(feature);
+        }
+    }
+    return uniqueFeatures;
+}
+
+// Load the csv file which includes the specific detail of each OD
+Promise.all([d3.dsv(",", "data/od_detail_0420.csv", function (d) {
+    return {
+        o_id: +d['o_id'],
+        d_id: +d['d_id'],
+        transit_time_mor: +d['transit.time.morning'],
+        odmts_time_mor: +d['total.odmts.time.plus'],
+        jobs_all: +d['jobs.all'],
+        poi_all: +d['poi.demand'],
+        transit_ratio_mor: +d['transit.ratio.mor'],
+        odmts_ratio_mor: +d['odmts.ratio.mor']
+    }}
+  )]
+).then(function(data) {
+  ready(data[0])
+})
+
+// set the variable that legend descriptions can be changed upon the trip purpose filter
+let element = document.getElementById("legendTitle");
+let newcontent =`
+    <p>Proportion of residents who can commute to work by transit within <b>45 minutes</b> during morning peak hour
+    </p>`
+    ;
+
+// **The whole process of dashboard starts by loading csv data
+function ready(data){
+
+  // reload the webpage since the map is not loaded
+  window.onload = function() {
+    if(!window.location.hash) {
+      window.location = window.location + '#loaded';
+      window.location.reload();
+    }
+  }
+  window.onload();
+
+  // used for !!!
+  function buildFilter(arr) {
+    var filter = ['in', 'o_id'];
+    if (arr.length === 0) {
+      return filter;
+    }
+    for(var i = 0; i < arr.length; i += 1) {
+      filter.push(arr[i]);
+    }
+    return filter;
+  }
+
+  // initial filtered variable (default) -> used for setting up the PROPERTY value
+  let meas_filter = 'abs'
+  let trip_filter = 'com'
+
+  // show filtered data only within the slider value
+  // absolute value_before (conventional transit system)
+  data_filtered_transit_time = data.filter(function(d) {
+    return d.transit_time_mor < slider_abs.value
+  });
+  // relative value_before (conventional transit system)
+  data_filtered_transit_ratio = data.filter(function(d) {
+    return d.transit_ratio_mor > (1/slider_rel.value)
+  });
+  // absolute value_after (odmts)
+  data_filtered_odmts_time = data.filter(function(d) {
+    return d.odmts_time_mor < slider_abs.value
+  });
+  // relative  value_after (odmts)
+  data_filtered_odmts_ratio = data.filter(function(d) {
+    return d.odmts_ratio_mor > (1/slider_rel.value)
+  });
+
+  // CREATE map_bef with more detials
+  map_bef.on('load', () => {
+      map_bef.addSource('before_access_0418',  {type: 'vector', url: "mapbox://uhwang3.before_access_0418" });
+
+      // Layer with the default property
+      map_bef.addLayer(
+        {
+          'id': 'bg_access_before',
+          'type': 'fill',
+          'source': 'before_access_0418',
+          'source-layer': 'before_access_0418',
+          'paint': {
+            'fill-color': {
+              'property' : 'abs.com.mor.45min',
+              'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+            },
+            'fill-opacity': 0.5,
+            'fill-outline-color': 'rgba(0,0,0,0.1)'
+          }
+        },
+      );
+      // Layer: showing accessible destination
+      map_bef.addLayer(
+        {
+          'id': 'bg-dest',
+          'type': 'fill',
+          'source': 'before_access_0418',
+          'source-layer': 'before_access_0418',
+          'paint': {
+            'fill-outline-color': '#ffffff',
+            'fill-color': '#ffffff',
+            'fill-opacity': 0.5
+          },
+          // Display none by adding a filter with an empty string.
+          'filter': ['in', 'o_id', ]
+        },
+      );
+
+      // Layer: showing origin block group
+      map_bef.addLayer(
+        {
+          'id': 'bg-origin',
+          'type': 'fill',
+          'source': 'before_access_0418',
+          'source-layer': 'before_access_0418',
+          'paint': {
+            'fill-outline-color': '#19ff00',
+            'fill-color': '#19ff00',
+            'fill-opacity': 0.4
+          },
+          // Display none by adding a filter with an empty string.
+          'filter': ['in', 'o_id', ]
+        },
+      );
+
+      // change the property name by controlling ACCESSIBILITY type (radio button)
+      document.getElementById('filters_meas').addEventListener('change', (event_meas) => {
+        const meas_target = event_meas.target.value;
+        // set the variable based on the chosen value
+        meas_filter = meas_target
+
+        // if the type is absolute,,, the property refers to the absolute value
+        if (meas_filter === 'abs') {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+          data_filtered_transit_time = data.filter(function(d) {
+            return d.transit_time_mor < slider_filter_abs
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+              `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+        // if the type is relative,,, the property refers to the relaitve value
+        // needs to add the ".0" as the raw value is stored in the natural number without .0
+        else {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+          data_filtered_transit_ratio = data.filter(function(d) {
+            return d.transit_ratio_mor > (1/slider_filter_rel)
+          });
+
+                    // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_rel + ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+            `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_rel + ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          }
+          element.innerHTML = newcontent;
+        }
+
+        // change the map's property
+        map_bef.setPaintProperty(
+          'bg_access_before', 'fill-color', {
+          'property' : field_bef,
+          'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+          }
+        )
+      });
+
+      // change the property name by controlling TRIP purpose (radio button)
+      document.getElementById('filters_trip').addEventListener('change', (event_trip) => {
+        const trip_target = event_trip.target.value;
+
+        trip_filter = trip_target
+
+        // if the type is absolute,,, the property refers to the absolute value
+        if (meas_filter === 'abs') {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+          data_filtered_transit_time = data.filter(function(d) {
+            return d.transit_time_mor < slider_filter_abs
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+            `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+        // if the type is relative,,, the property refers to the relaitve value
+        // needs to add the ".0" as the raw value is stored in the natural number without .0
+        else {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+          data_filtered_transit_ratio = data.filter(function(d) {
+            return d.transit_ratio_mor > (1/slider_filter_rel)
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+            `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+
+        // change the map's property
+        map_bef.setPaintProperty(
+          'bg_access_before', 'fill-color', {
+          'property' : field_bef,
+          'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+          }
+        )
+
+        });
+
+      // change the property name by controlling SLIDER_ABSOLUTE value
+      slider_abs.addEventListener('input', (sa) => {
+        //update the printed slider value
+        sliderValue_abs.innerHTML = sa.target.value;
+
+        slider_filter_abs = sa.target.value;
+
+        // if the type is absolute,,, the property refers to the absolute value
+        if (meas_filter === 'abs') {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+          data_filtered_transit_time = data.filter(function(d) {
+          return d.transit_time_mor < slider_filter_abs
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+            `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+        // if the type is relative,,, the property refers to the relaitve value
+        // needs to add the ".0" as the raw value is stored in the natural number without .0
+        else {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+          data_filtered_transit_ratio = data.filter(function(d) {
+            return d.transit_ratio_mor > (1/slider_filter_rel)
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+              `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+        // change the map's property
+        map_bef.setPaintProperty(
+          'bg_access_before', 'fill-color', {
+          'property' : field_bef,
+          'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+          }
+        )
+      });
+
+
+      // change the property name by controlling SLIDER_ABSOLUTE value
+      slider_rel.addEventListener('input', (sr) => {
+        //update the printed slider value
+        sliderValue_rel.innerHTML = sr.target.value;
+
+        slider_filter_rel = sr.target.value;
+
+        // if the type is absolute,,, the property refers to the absolute value
+        if (meas_filter === 'abs') {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+          data_filtered_transit_time = data.filter(function(d) {
+          return d.transit_time_mor < slider_filter_abs
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+              `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_abs + ` minutes</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+        // if the type is relative,,, the property refers to the relaitve value
+        // needs to add the ".0" as the raw value is stored in the natural number without .0
+        else {
+          var field_bef = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+          data_filtered_transit_ratio = data.filter(function(d) {
+            return d.transit_ratio_mor > (1/slider_filter_rel)
+          });
+
+          // change the legend description
+          if (trip_filter === 'com') {
+            newcontent =
+              `<p>Proportion of residents who can commute to work by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          } else {
+            newcontent =
+              `<p>Proportion of residents who can travel to non-work-related destinations by transit within <b>`
+              + slider_filter_rel +
+              ` times of driving time</b> during morning peak hour
+              </p>`
+            ;
+          }
+
+          element.innerHTML = newcontent;
+
+        }
+
+        // change the map's property
+        map_bef.setPaintProperty(
+          'bg_access_before', 'fill-color', {
+          'property' : field_bef,
+          'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+          }
+        )
+      });
+
+
+
+      map_bef.on('mousemove', 'bg_access_before', (er) => {
+        // Change the cursor style as a UI indicator.
+        map_bef.getCanvas().style.cursor = 'pointer';
+
+        // pointed block group
+        const feature = er.features[0];
+
+        // relative
+        const o_d_pairs_rel = data_filtered_transit_ratio.filter(function(d) {
+          return d['o_id'] === feature.properties['o_id']})
+        // absolute
+        const o_d_pairs_abs = data_filtered_transit_time.filter(function(d) {
+          return d['o_id'] === feature.properties['o_id']})
+
+        // destinations of the od pair
+        const dest_ids_rel = o_d_pairs_rel.map(function(d) {return d.d_id});
+        const dest_ids_abs = o_d_pairs_abs.map(function(d) {return d.d_id});
+
+        var myFilter_rel = buildFilter(dest_ids_rel);
+        var myFilter_abs = buildFilter(dest_ids_abs);
+
+        // Use filter to collect only results with the same origin id.
+        const destBGs_rel = map_bef.querySourceFeatures('bg_access_before', {
+          sourceLayer: 'before_access_0418',
+          filter: myFilter_rel
+        });
+        const destBGs_abs = map_bef.querySourceFeatures('bg_access_before', {
+          sourceLayer: 'before_access_0418',
+          filter: myFilter_abs
+        });
+
+        // Remove duplicates by checking for matching ID.
+        const destBGs_unique_rel = getUniqueFeatures(destBGs_rel, 'o_id');
+        const destBGs_unique_abs = getUniqueFeatures(destBGs_abs, 'o_id');
+
+        // Total accessible jobs.
+        const accessibledests_rel_com = o_d_pairs_rel.reduce((memo, feature) => {
+          return memo + feature['jobs_all']
+        }, 0);
+        const accessibledests_abs_com = o_d_pairs_abs.reduce((memo, feature) => {
+          return memo + feature['jobs_all']
+        }, 0);
+        const accessibledests_rel_non = o_d_pairs_rel.reduce((memo, feature) => {
+          return memo + feature['poi_all']
+        }, 0);
+        const accessibledests_abs_non = o_d_pairs_abs.reduce((memo, feature) => {
+          return memo + feature['poi_all']
+        }, 0);
+
+
+        if (meas_filter === 'abs') {
+          map_bef.setFilter('bg-dest', myFilter_abs);
+          map_bef.setFilter('bg-origin', ['in', 'o_id', feature.properties['o_id']]);
+          map_aft.setFilter('bg-origin', ['in', 'o_id', feature.properties['o_id']]);
+
+          if (trip_filter === 'com') {
+          popup_bef
+            .setLngLat(er.lngLat)
+            .setHTML(
+            '<center>' + 'Residents who can access their jobs ' + '<br>' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibledests_abs_com.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibledests_abs_com/feature.properties['jobs.all']*1000)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>'
+            )
+            .addTo(map_bef);
+          }
+          else {
+          popup_bef
+            .setLngLat(er.lngLat)
+            .setHTML(
+            '<center>' + 'Residents who can access non-work-related destinations ' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibledests_abs_non.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibledests_abs_non/feature.properties['pop']*10)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>'
+            )
+            .addTo(map_bef);
+          }
+        }
+
+        else {
+          map_bef.setFilter('bg-dest', myFilter_rel);
+          map_bef.setFilter('bg-origin', ['in', 'o_id', feature.properties['o_id']]);
+          map_aft.setFilter('bg-origin', ['in', 'o_id', feature.properties['o_id']]);
+
+          if (trip_filter === 'com') {
+          popup_bef
+            .setLngLat(er.lngLat)
+            .setHTML(
+            '<center>' + 'Residents who can access their jobs ' + '<br>' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+            ' * drive time: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibledests_rel_com.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibledests_rel_com/feature.properties['jobs.all']*1000)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>'
+            )
+            .addTo(map_bef);
+          }
+          else {
+          popup_bef
+            .setLngLat(er.lngLat)
+            .setHTML(
+            '<center>' + 'Residents who can access non-work-related destinations ' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+            ' * drive time: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibledests_rel_non.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibledests_rel_non/feature.properties['pop']*10)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>'
+            )
+            .addTo(map_bef);
+          }
+        };
+
+        // Add the selected features to the highlighted layer.
+        if (meas_filter === 'abs') {
+
+          const o_d_pairs_abs_on_aft = data_filtered_odmts_time.filter(function(d) {
+            return d['o_id'] === feature.properties['o_id']})
+          const dest_ids_abs_on_aft = o_d_pairs_abs_on_aft.map(function(d) {return d.d_id});
+          var myFilter_abs_on_aft = buildFilter(dest_ids_abs_on_aft);
+
+          map_aft.setFilter('bg-dest', myFilter_abs_on_aft)
+
+        // tooltip = synced info on the absolute map
+          const accessibleDest_abs_com_on_aft = o_d_pairs_abs_on_aft.reduce((memo, feature) => {
+            return memo + feature['jobs_all'];
+          }, 0);
+          const accessibleDest_abs_non_on_aft = o_d_pairs_abs_on_aft.reduce((memo, feature) => {
+            return memo + feature['poi_all'];
+          }, 0);
+
+          const coordiante_for_aft = er.lngLat.wrap()
+
+          if (trip_filter === 'com') {
+          popup_aft
+            .setLngLat(coordiante_for_aft)
+            .setHTML(
+            '<center>' + 'Residents who can access their jobs ' + '<br>' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+  accessibleDest_abs_com_on_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_abs_com_on_aft/feature.properties['jobs.all']*1000)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_aft)
+          }
+          else {
+            popup_aft
+            .setLngLat(coordiante_for_aft)
+            .setHTML(
+            '<center>' + 'Residents who can access non-work-related destinations ' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibleDest_abs_non_on_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_abs_non_on_aft/feature.properties['pop']*10)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_aft)
+          }
+
+        }
+        else {
+          const o_d_pairs_rel_on_aft = data_filtered_odmts_ratio.filter(function(d) {
+            return d['o_id'] === feature.properties['o_id']})
+          const dest_ids_rel_on_aft = o_d_pairs_rel_on_aft.map(function(d) {return d.d_id});
+          var myFilter_rel_on_aft = buildFilter(dest_ids_rel_on_aft);
+
+          map_aft.setFilter('bg-dest', myFilter_rel_on_aft)
+
+        // tooltip = synced info on the absolute map
+          const accessibleDest_rel_com_on_aft = o_d_pairs_rel_on_aft.reduce((memo, feature) => {
+            return memo + feature['jobs_all'];
+          }, 0);
+          const accessibleDest_rel_non_on_aft = o_d_pairs_rel_on_aft.reduce((memo, feature) => {
+            return memo + feature['poi_all'];
+          }, 0);
+
+          const coordiante_for_aft = er.lngLat.wrap()
+
+          if (trip_filter === 'com') {
+          popup_aft
+            .setLngLat(coordiante_for_aft)
+            .setHTML(
+            '<center>' + 'Residents who can access their jobs ' + '<br>' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+            ' * drive time: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibleDest_rel_com_on_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_rel_com_on_aft/feature.properties['jobs.all']*1000)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_aft)
+          }
+          else {
+            popup_aft
+            .setLngLat(coordiante_for_aft)
+            .setHTML(
+            '<center>' + 'Residents who can access non-work-related destinations ' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+            ' * drive time: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibleDest_rel_non_on_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_rel_non_on_aft/feature.properties['pop']*10)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_aft)
+          }
+        }
+
+      }); //mousemove ends here
+
+      map_bef.on('mouseleave', 'bg_access_before', () => {
+        map_bef.getCanvas().style.cursor = '';
+        popup_bef.remove();
+        popup_aft.remove();
+        map_bef.setFilter('bg-dest', ['in', 'o_id', '']);
+        map_aft.setFilter('bg-dest', ['in', 'o_id', '']);
+        map_bef.setFilter('bg-origin', ['in', 'o_id', '']);
+        map_aft.setFilter('bg-origin', ['in', 'o_id', '']);
+      });
+  }); //map_bef ends
+
+
+  // CREATE map_aft with more detials
+  map_aft.on('load', () => {
+    map_aft.addSource('after_access_0420',  {type: 'vector', url: "mapbox://uhwang3.after_access_0420" });
+
+    // Layer with the default property
+    map_aft.addLayer(
+      {
+        'id': 'bg_access_after',
+        'type': 'fill',
+        'source': 'after_access_0420',
+        'source-layer': 'after_access_0420',
+        'paint': {
+          'fill-color': {
+            'property' : 'abs.com.mor.45min',
+            'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+          },
+          'fill-opacity': 0.5,
+          'fill-outline-color': 'rgba(0,0,0,0.1)'
+        }
+      },
+    );
+    // Layer: showing accessible destination
+    map_aft.addLayer(
+      {
+        'id': 'bg-dest',
+        'type': 'fill',
+        'source': 'after_access_0420',
+        'source-layer': 'after_access_0420',
+        'paint': {
+          'fill-outline-color': '#ffffff',
+          'fill-color': '#ffffff',
+          'fill-opacity': 0.5
+        },
+        // Display none by adding a filter with an empty string.
+        'filter': ['in', 'o_id', ]
+      },
+    );
+
+    // Layer: showing origin block group
+    map_aft.addLayer(
+      {
+        'id': 'bg-origin',
+        'type': 'fill',
+        'source': 'after_access_0420',
+        'source-layer': 'after_access_0420',
+        'paint': {
+          'fill-outline-color': '#19ff00',
+          'fill-color': '#19ff00',
+          'fill-opacity': 0.4
+        },
+        // Display none by adding a filter with an empty string.
+        'filter': ['in', 'o_id', ]
+      },
+    );
+
+    // change the property name by controlling ACCESSIBILITY type (radio button)
+    document.getElementById('filters_meas').addEventListener('change', (event_meas) => {
+      const meas_target = event_meas.target.value;
+      // set the variable based on the chosen value
+      meas_filter = meas_target
+
+      // if the type is absolute,,, the property refers to the absolute value
+      if (meas_filter === 'abs') {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+        data_filtered_odmts_time = data.filter(function(d) {
+        return d.odmts_time_mor < slider_filter_abs
+        });
+      }
+      // if the type is relative,,, the property refers to the relaitve value
+      // needs to add the ".0" as the raw value is stored in the natural number without .0
+      else {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+        data_filtered_odmts_ratio = data.filter(function(d) {
+          return d.odmts_ratio_mor > (1/slider_filter_rel)
+        });
+      }
+
+      // change the map's property
+      map_aft.setPaintProperty(
+        'bg_access_after', 'fill-color', {
+        'property' : field_aft,
+        'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+        }
+      )
+    });
+
+    // change the property name by controlling TRIP purpose (radio button)
+    document.getElementById('filters_trip').addEventListener('change', (event_trip) => {
+      const trip_target = event_trip.target.value;
+
+      trip_filter = trip_target
+
+      // if the type is absolute,,, the property refers to the absolute value
+      if (meas_filter === 'abs') {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+        data_filtered_odmts_time = data.filter(function(d) {
+        return d.odmts_time_mor < slider_filter_abs
+        });
+      }
+      // if the type is relative,,, the property refers to the relaitve value
+      // needs to add the ".0" as the raw value is stored in the natural number without .0
+      else {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+        data_filtered_odmts_ratio = data.filter(function(d) {
+          return d.odmts_ratio_mor > (1/slider_filter_rel)
+        });
+      }
+      // change the map's property
+      map_aft.setPaintProperty(
+        'bg_access_after', 'fill-color', {
+        'property' : field_aft,
+        'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+        }
+      )
+
+      });
+
+    // change the property name by controlling SLIDER_ABSOLUTE value
+    slider_abs.addEventListener('input', (sa) => {
+      //update the printed slider value
+      sliderValue_abs.innerHTML = sa.target.value;
+
+      slider_filter_abs = sa.target.value;
+
+      // if the type is absolute,,, the property refers to the absolute value
+      if (meas_filter === 'abs') {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+        data_filtered_odmts_time = data.filter(function(d) {
+          return d.odmts_time_mor < slider_filter_abs
+        });
+      }
+      // if the type is relative,,, the property refers to the relaitve value
+      // needs to add the ".0" as the raw value is stored in the natural number without .0
+      else {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+        data_filtered_odmts_ratio = data.filter(function(d) {
+          return d.odmts_ratio_mor > (1/slider_filter_rel)
+        });
+      }
+
+      // change the map's property
+      map_aft.setPaintProperty(
+        'bg_access_after', 'fill-color', {
+        'property' : field_aft,
+        'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+        }
+      )
+    });
+
+
+    // change the property name by controlling SLIDER_ABSOLUTE value
+    slider_rel.addEventListener('input', (sr) => {
+      //update the printed slider value
+      sliderValue_rel.innerHTML = sr.target.value;
+
+      slider_filter_rel = sr.target.value;
+
+      // if the type is absolute,,, the property refers to the absolute value
+      if (meas_filter === 'abs') {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_abs + 'min';
+
+        data_filtered_odmts_time = data.filter(function(d) {
+         return d.odmts_time_mor < slider_filter_abs
+        });
+      }
+      // if the type is relative,,, the property refers to the relaitve value
+      // needs to add the ".0" as the raw value is stored in the natural number without .0
+      else {
+        var field_aft = meas_filter + '.' + trip_filter + '.mor.' + slider_filter_rel;
+
+        data_filtered_odmts_ratio = data.filter(function(d) {
+          return d.odmts_ratio_mor > (1/slider_filter_rel)
+        });
+      }
+
+      // change the map's property
+      map_aft.setPaintProperty(
+        'bg_access_after', 'fill-color', {
+        'property' : field_aft,
+        'stops': [[0, colors[0]], [0.05, colors[1]], [0.1, colors[2]], [0.2, colors[3]], [0.3, colors[4]], [0.4, colors[5]],  [0.6, colors[6]],  [0.8, colors[7]]]
+        }
+      )
+    });
+
+
+    map_aft.on('mousemove', 'bg_access_after', (et) => {
+      // Change the cursor style as a UI indicator.
+      map_aft.getCanvas().style.cursor = 'pointer';
+
+      const feature_aft = et.features[0];
+
+      // relative
+      const o_d_pairs_rel_aft = data_filtered_odmts_ratio.filter(function(d) {
+        return d['o_id'] === feature_aft.properties['o_id']})
+      const o_d_pairs_abs_aft = data_filtered_odmts_time.filter(function(d) {
+        return d['o_id'] === feature_aft.properties['o_id']})
+
+      const dest_ids_rel_aft = o_d_pairs_rel_aft.map(function(d) {return d.d_id});
+      const dest_ids_abs_aft = o_d_pairs_abs_aft.map(function(d) {return d.d_id});
+
+      var myFilter_rel_aft = buildFilter(dest_ids_rel_aft);
+      var myFilter_abs_aft = buildFilter(dest_ids_abs_aft);
+
+      // Use filter to collect only results with the same origin id.
+      const destBGs_rel_aft = map_aft.querySourceFeatures('bg_access_after', {
+        sourceLayer: 'after_access_0420',
+        filter: myFilter_rel_aft
+      });
+      const destBGs_abs_aft = map_aft.querySourceFeatures('bg_access_after', {
+        sourceLayer: 'after_access_0420',
+        filter: myFilter_abs_aft
+      });
+
+      // Remove duplicates by checking for matching ID.
+      const destBGs_unique_rel_aft = getUniqueFeatures(destBGs_rel_aft, 'o_id');
+      const destBGs_unique_abs_aft = getUniqueFeatures(destBGs_abs_aft, 'o_id');
+
+      // Total accessible jobs.
+      const accessibledests_rel_com_aft = o_d_pairs_rel_aft.reduce((memo, feature) => {
+        return memo + feature['jobs_all']
+      }, 0);
+      const accessibledests_abs_com_aft = o_d_pairs_abs_aft.reduce((memo, feature) => {
+        return memo + feature['jobs_all']
+      }, 0);
+      const accessibledests_rel_non_aft = o_d_pairs_rel_aft.reduce((memo, feature) => {
+        return memo + feature['poi_all']
+      }, 0);
+      const accessibledests_abs_non_aft = o_d_pairs_abs_aft.reduce((memo, feature) => {
+        return memo + feature['poi_all']
+      }, 0);
+
+
+      if (meas_filter === 'abs') {
+        map_aft.setFilter('bg-dest', myFilter_abs_aft);
+        map_aft.setFilter('bg-origin', ['in', 'o_id', feature_aft.properties['o_id']]);
+        map_bef.setFilter('bg-origin', ['in', 'o_id', feature_aft.properties['o_id']]);
+
+        if (trip_filter === 'com') {
+        popup_aft
+          .setLngLat(et.lngLat)
+          .setHTML(
+          '<center>' + 'Residents who can access their jobs ' + '<br>' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+          ' minutes: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+ accessibledests_abs_com_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibledests_abs_com_aft/feature_aft.properties['jobs.all']*1000)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>'
+          )
+          .addTo(map_aft);
+        }
+        else {
+          popup_aft
+          .setLngLat(et.lngLat)
+          .setHTML(
+          '<center>' + 'Residents who can access non-work-related destinations ' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+          ' minutes: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+ accessibledests_abs_non_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibledests_abs_non_aft/feature_aft.properties['pop']*10)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>'
+          )
+          .addTo(map_aft);
+        }
+      }
+
+      else {
+        map_aft.setFilter('bg-dest', myFilter_rel_aft);
+        map_aft.setFilter('bg-origin', ['in', 'o_id', feature_aft.properties['o_id']]);
+        map_bef.setFilter('bg-origin', ['in', 'o_id', feature_aft.properties['o_id']]);
+
+        if (trip_filter === 'com') {
+        popup_aft
+          .setLngLat(et.lngLat)
+          .setHTML(
+          '<center>' + 'Residents can access their jobs ' + '<br>' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+          ' * drive time: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+ accessibledests_rel_com_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibledests_rel_com_aft/feature_aft.properties['jobs.all']*1000)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>'
+          )
+          .addTo(map_aft);
+        }
+        else {
+        popup_aft
+          .setLngLat(et.lngLat)
+          .setHTML(
+          '<center>' + 'Residents who can access non-work-related destinations ' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+          ' * drive time: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+ accessibledests_rel_non_aft.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibledests_rel_non_aft/feature_aft.properties['pop']*10)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>'
+          )
+          .addTo(map_aft);
+        }
+      }
+
+
+
+
+        // Add the selected features to the highlighted layer.
+      if (meas_filter === 'abs') {
+
+        const o_d_pairs_abs_on_bef = data_filtered_transit_time.filter(function(d) {
+          return d['o_id'] === feature_aft.properties['o_id']})
+        const dest_ids_abs_on_bef = o_d_pairs_abs_on_bef.map(function(d) {return d.d_id});
+        var myFilter_abs_on_bef = buildFilter(dest_ids_abs_on_bef);
+
+        map_bef.setFilter('bg-dest', myFilter_abs_on_bef)
+
+        // tooltip = synced info on the absolute map
+        const accessibleDest_abs_com_on_bef = o_d_pairs_abs_on_bef.reduce((memo, feature) => {
+          return memo + feature['jobs_all'];
+        }, 0);
+        const accessibleDest_abs_non_on_bef = o_d_pairs_abs_on_bef.reduce((memo, feature) => {
+          return memo + feature['poi_all'];
+        }, 0);
+
+        const coordiante_for_bef = et.lngLat.wrap()
+
+          if (trip_filter === 'com') {
+          popup_bef
+            .setLngLat(coordiante_for_bef)
+            .setHTML(
+            '<center>' + 'Residents who can access their jobs ' + '<br>' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibleDest_abs_com_on_bef.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_abs_com_on_bef/feature_aft.properties['jobs.all']*1000)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_bef)
+          }
+          else {
+            popup_bef
+            .setLngLat(coordiante_for_bef)
+            .setHTML(
+            '<center>' + 'Residents who can access non-work-related destinations ' +
+            'within ' + '<b>'+ "<font size='+1'>" + slider_abs.value + "</font>" + '</b>' +
+            ' minutes: ' + '<br>' +
+            "<font size='+1'>"+ '<b>'+ accessibleDest_abs_non_on_bef.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+            Math.round((accessibleDest_abs_non_on_bef/feature_aft.properties['pop']*10)/10) + '</b>' +
+            '% of residents from this Block Group)' + '</font>' +'</center>')
+            .addTo(map_bef)
+          }
+
+        }
+
+      else {
+        const o_d_pairs_rel_on_bef = data_filtered_transit_ratio.filter(function(d) {
+          return d['o_id'] === feature_aft.properties['o_id']})
+        const dest_ids_rel_on_bef = o_d_pairs_rel_on_bef.map(function(d) {return d.d_id});
+        var myFilter_rel_on_bef = buildFilter(dest_ids_rel_on_bef);
+
+        map_bef.setFilter('bg-dest', myFilter_rel_on_bef)
+
+        // tooltip = synced info on the absolute map
+        const accessibleDest_rel_com_on_bef = o_d_pairs_rel_on_bef.reduce((memo, feature) => {
+          return memo + feature['jobs_all'];
+        }, 0);
+        const accessibleDest_rel_non_on_bef = o_d_pairs_rel_on_bef.reduce((memo, feature) => {
+          return memo + feature['poi_all'];
+        }, 0);
+
+        const coordiante_for_bef = et.lngLat.wrap()
+
+        if (trip_filter === 'com') {
+        popup_bef
+          .setLngLat(coordiante_for_bef)
+          .setHTML(
+          '<center>' + 'Residents who can access their jobs ' + '<br>' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+          ' * drive time: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+  accessibleDest_rel_com_on_bef.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibleDest_rel_com_on_bef/feature_aft.properties['jobs.all']*1000)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>')
+          .addTo(map_bef)
+        }
+        else {
+        popup_bef
+          .setLngLat(coordiante_for_bef)
+          .setHTML(
+          '<center>' + 'Residents who can access non-work-related destinations ' +
+          'within ' + '<b>'+ "<font size='+1'>" + slider_rel.value + "</font>" + '</b>' +
+          ' * drive time: ' + '<br>' +
+          "<font size='+1'>"+ '<b>'+ accessibleDest_rel_non_on_bef.toString() + "</font>" + '</b>' + "<font size='-1'>" + ' (' + '<b>' +
+          Math.round((accessibleDest_rel_non_on_bef/feature_aft.properties['pop']*10)/10) + '</b>' +
+          '% of residents from this Block Group)' + '</font>' +'</center>')
+          .addTo(map_bef)
+        }
+      }
+
+    }); //mousemove ends here
+
+    map_aft.on('mouseleave', 'bg_access_after', () => {
+      map_aft.getCanvas().style.cursor = '';
+      popup_aft.remove();
+      popup_bef.remove();
+      map_aft.setFilter('bg-dest', ['in', 'o_id', '']);
+      map_bef.setFilter('bg-dest', ['in', 'o_id', '']);
+      map_aft.setFilter('bg-origin', ['in', 'o_id', '']);
+      map_bef.setFilter('bg-origin', ['in', 'o_id', '']);
+    });
+
+  }); //map_aft ends
+
+  // add additional maps (atlanta boundary & main road)
+  map_bef.on('load', () => {
+  map_bef.addSource('atl_boundary',  {type: 'vector', url: "mapbox://uhwang3.atl_boundary" });
+
+  map_bef.addSource('main_road_3counties',  {type: 'vector', url: "mapbox://uhwang3.cl0q27y7p3mcw20qgismthmry-4a3tz" });
+
+  map_bef.addLayer(
+    {
+      'id': 'main_road_3counties',
+      'type': 'line',
+      'source': 'main_road_3counties',
+      'source-layer': 'main_road_3counties',
+      'paint': {
+        'line-color': 'rgba(20,20,20,0.7)',
+        'line-width': 1.5
+        }
+      },
+    );
+
+    map_bef.addLayer(
+      {
+        'id': 'atl_boundary',
+        'type': 'fill',
+        'source': 'atl_boundary',
+        'source-layer': 'atl_boundary',
+        'paint': {
+          'fill-color':'rgba(0,0,0,0)',
+          'fill-outline-color': 'rgba(200,200,200,0.5)'
+        }
+      },
+    );
+  })
+
+  map_aft.on('load', () => {
+  map_aft.addSource('atl_boundary',  {type: 'vector', url: "mapbox://uhwang3.atl_boundary" });
+
+  map_aft.addSource('main_road_3counties',  {type: 'vector', url: "mapbox://uhwang3.cl0q27y7p3mcw20qgismthmry-4a3tz" });
+
+  map_aft.addLayer(
+    {
+      'id': 'main_road_3counties',
+      'type': 'line',
+      'source': 'main_road_3counties',
+      'source-layer': 'main_road_3counties',
+      'paint': {
+        'line-color': 'rgba(20,20,20,0.7)',
+        'line-width': 1.5
+        }
+      },
+    );
+
+    map_aft.addLayer(
+      {
+        'id': 'atl_boundary',
+        'type': 'fill',
+        'source': 'atl_boundary',
+        'source-layer': 'atl_boundary',
+        'paint': {
+          'fill-color':'rgba(0,0,0,0)',
+          'fill-outline-color': 'rgba(200,200,200,0.5)'
+        }
+      },
+    );
+  })
+
+  map_aft.addControl(
+    new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      mapboxgl: mapboxgl,
+    }),
+    'bottom-right'
+  );
+}
+
+// move + zoom... both maps simultaneously
+function coordinate() {
+  var disable = false;
+  map_bef.on('move', function() {
+    if (!disable) {
+      var center = map_bef.getCenter();
+      var zoom = map_bef.getZoom();
+      var pitch = map_bef.getPitch();
+      var bearing = map_bef.getBearing();
+      disable = true;
+      map_aft.setCenter(center);
+      map_aft.setZoom(zoom);
+      map_aft.setPitch(pitch);
+      map_aft.setBearing(bearing);
+      disable = false;
+    }
+  })
+  map_aft.on('move', function() {
+    if (!disable) {
+      var center = map_aft.getCenter();
+      var zoom = map_aft.getZoom();
+      var pitch = map_aft.getPitch();
+      var bearing = map_aft.getBearing();
+      disable = true;
+      map_bef.setCenter(center);
+      map_bef.setZoom(zoom);
+      map_bef.setPitch(pitch);
+      map_bef.setBearing(bearing);
+      disable = false;
+    }
+  })
+}
+coordinate();
+
+</script>
+
+</body>
+</html>
